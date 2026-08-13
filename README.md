@@ -1,0 +1,69 @@
+# dsh-manual-approval
+
+<!-- DeepSeek Harness 衍生声明 -->
+> **DeepSeek Harness 个人适配声明（Personal Adaptation Notice）**
+>
+> 本项目是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的**个人适配产物（personal adaptation）**，**并非 DeepSeek Harness 官方文件（not an official DeepSeek Harness file）**，随附功能、使用说明与个人产物（bundled with features, documentation, and personal artifacts），可与 DeepSeek Harness 搭配使用，也可独立使用。
+>
+> This project is a **personal adaptation** for DeepSeek Harness, and is **NOT an official DeepSeek Harness file**, bundled with features, documentation, and personal artifacts. It can be used alongside DeepSeek Harness or standalone.
+
+**作者 / Author**: [h565656445](https://github.com/h565656445)
+
+**合作 / Collaboration**: 如有项目可以一起合作，欢迎联系。微信：`wohaishihenshuaide`。If you have projects, let's collaborate. WeChat: `wohaishihenshuaide`.
+
+
+---
+
+## 用途 / What this is for
+
+人工审批模块：权限审批流程，发布/付款/删除/规则修改等不可逆动作须对精确对象当次批准。
+
+Manual approval module: permission gates for irreversible actions.
+
+---
+## Hermes Manual Approval / Hermes 人工审批
+
+人工审批消费原语：`HermesManualApproval.psm1` 以审批 SHA-256 为幂等键记录 fixture_record 人工启动审批的一次性消费（重复消费抛错），拒绝负预算，消费记录写入 `_security/fixture_record_approvals/`，为受监督 Worker 的人工放行流程提供证据。
+
+Manual-approval consumption primitives: `HermesManualApproval.psm1` records one-shot consumption of fixture_record manual-start approvals keyed by the approval SHA-256 (re-consumption throws), rejects negative budgets, and persists consumption records under `_security/fixture_record_approvals/`, providing evidence for supervised-worker release flows.
+
+## Features / 功能
+
+- 幂等消费：同一审批哈希仅可消费一次 / Idempotent consumption keyed by the approval SHA-256
+- 预算校验：拒绝负预算 / Negative-budget rejection
+- 审计证据：消费记录落盘 `_security/fixture_record_approvals/` / Consumption records under _security/fixture_record_approvals/
+- 组合基础：构建于 HermesJsonProjection 之上 / Built on HermesJsonProjection
+
+## What's inside / 目录结构
+
+```
+dsh-manual-approval/
+├── README.md
+├── LICENSE
+├── src/HermesManualApproval.psm1
+└── .dsh/
+```
+
+## Quick start / 快速开始
+
+```powershell
+Import-Module .\src\HermesManualApproval.psm1 -Force
+
+Use-HermesManualStartApproval -RuntimeRoot .\runtime -TaskId task-001 `
+  -TaskContractSha256 <64-hex> -ProviderIntentSha256 <64-hex> `
+  -ManualStartApprovalSha256 <64-hex> -BudgetCny 1.0
+```
+
+## DeepSeek Harness 衍生 / DSH Derivative
+
+本项目附带 DeepSeek Harness 衍生包，位于 `.dsh/` 目录：
+
+- `preset.yml` — Agent 预设元数据
+- `agent.cordis.yml` — Cordis 组装（基于 standard 预设，persona 已定制）
+- `skills/dsh-manual-approval/SKILL.md` — 项目专属技能（skill）
+
+安装与接入方式见 [`.dsh/README.md`](.dsh/README.md)（双语）。
+
+## License / 许可证
+
+[MIT](LICENSE)
